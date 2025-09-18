@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz interactif</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      text-align: center;
+      padding: 20px;
+    }
+    #quiz-container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .question {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .options button:hover {
+      background: #2980b9;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quiz interactif</h1>
+  <div id="quiz-container">
+    <div id="question" class="question"></div>
+    <div id="options" class="options"></div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // --- Générateurs de questions (adaptés depuis ton Python) ---
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function generateUniqueOptions(correct, pool, n=4) {
+      let options = new Set([correct]);
+      while (options.size < n) {
+        options.add(pool[Math.floor(Math.random() * pool.length)]);
+      }
+      return shuffleArray(Array.from(options));
+    }
+
+    function questionsCulture(n) {
+      const villes = ["Paris", "Londres", "Rome", "Berlin", "Madrid"];
+      const pays = ["France", "Royaume-Uni", "Italie", "Allemagne", "Espagne"];
+      let qs = [];
+      for (let i=0; i<n; i++) {
+        let idx = Math.floor(Math.random() * villes.length);
+        let q = `Quelle est la capitale de ${pays[idx]} ?`;
+        let options = generateUniqueOptions(villes[idx], villes);
+        let answer = options.indexOf(villes[idx]);
+        qs.push({question: q, options, answer});
+      }
+      return qs;
+    }
+
+    function questionsMath(n) {
+      let qs = [];
+      for (let i=0; i<n; i++) {
+        let a = Math.floor(Math.random()*50)+1;
+        let b = Math.floor(Math.random()*50)+1;
+        let correct = a+b;
+        let pool = [];
+        for (let j=Math.max(1,correct-10); j<=correct+10; j++) pool.push(j);
+        let options = generateUniqueOptions(correct, pool);
+        let answer = options.indexOf(correct);
+        qs.push({question: `Combien font ${a} + ${b} ?`, options, answer});
+      }
+      return qs;
+    }
+
+    function questionsSciences(n) {
+      const elements = ["Hydrogène", "Oxygène", "Carbone", "Azote"];
+      const symboles = ["H", "O", "C", "N"];
+      let qs = [];
+      for (let i=0; i<n; i++) {
+        let idx = Math.floor(Math.random() * elements.length);
+        let q = `Quel est le symbole chimique de ${elements[idx]} ?`;
+        let options = generateUniqueOptions(symboles[idx], symboles);
+        let answer = options.indexOf(symboles[idx]);
+        qs.push({question: q, options, answer});
+      }
+      return qs;
+    }
+
+    function questionsDevPerso(n) {
+      const bonnes = [
+        ["Quelle pratique aide à réduire le stress ?", "Méditation"],
+        ["Quelle habitude améliore la qualité du sommeil ?", "Éviter les écrans avant de dormir"],
+        ["Quelle méthode aide à mieux gérer les émotions ?", "Respiration profonde"],
+        ["Quelle est une bonne méthode pour rester motivé ?", "Fixer des objectifs clairs"]
+      ];
+      const faux = ["Procrastination", "Multitâche", "Isolement", "Boire du café", "Travailler tard", "Ignorer les problèmes"];
+      let qs = [];
+      for (let i=0; i<n; i++) {
+        let [q, bonne] = bonnes[Math.floor(Math.random()*bonnes.length)];
+        let options = generateUniqueOptions(bonne, faux, 4);
+        let answer = options.indexOf(bonne);
+        qs.push({question: q, options, answer});
+      }
+      return qs;
+    }
+
+    // --- Quiz principal ---
+    let questions = [
+      ...questionsCulture(5),
+      ...questionsMath(5),
+      ...questionsSciences(5),
+      ...questionsDevPerso(5)
+    ];
+    questions = shuffleArray(questions).slice(0, 10);
+
+    let current = 0;
+    let score = 0;
+
+    const qElem = document.getElementById("question");
+    const optionsElem = document.getElementById("options");
+    const resultElem = document.getElementById("result");
+
+    function showQuestion() {
+      if (current >= questions.length) {
+        qElem.textContent = "Quiz terminé !";
+        optionsElem.innerHTML = "";
+        resultElem.textContent = `Ton score final est ${score} / ${questions.length}`;
+        return;
+      }
+      let q = questions[current];
+      qElem.textContent = q.question;
+      optionsElem.innerHTML = "";
+      q.options.forEach((opt, i) => {
+        let btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => {
+          if (i === q.answer) {
+            score++;
+            resultElem.textContent = "Bonne réponse ! 🎉";
+          } else {
+            resultElem.textContent = `Mauvaise réponse... 😕 La bonne était: ${q.options[q.answer]}`;
+          }
+          current++;
+          setTimeout(showQuestion, 1500);
+        };
+        optionsElem.appendChild(btn);
+      });
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
