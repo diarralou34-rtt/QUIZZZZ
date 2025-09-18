@@ -1,0 +1,1 @@
+Bienvenue sur QuizMaster, votre plateforme interactive dédiée à tous les passionnés de connaissances et de défis intellectuels. Que vous soyez étudiant, professionnel, ou simplement curieux, notre site vous propose une expérience unique pour tester vos compétences, enrichir votre culture générale et passer un moment ludique en solo ou entre amis.
